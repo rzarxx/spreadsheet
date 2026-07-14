@@ -93,10 +93,7 @@ export default function AuthModal({ show, onClose }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Registrasi gagal");
       localStorage.setItem("kkl_token", tokenToUse);
-      setStatus({ type: "success", message: `Token berhasil dibuat: ${tokenToUse}` });
-      setTimeout(() => {
-        onClose();
-      }, 800);
+      setStatus({ type: "success", message: `Token Anda: ${tokenToUse} (Harap salin & simpan!)` });
     } catch (err) {
       setStatus({ type: "error", message: err.message });
     } finally {

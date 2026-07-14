@@ -335,15 +335,30 @@ export default function Home() {
               </div>
             </a>
 
-            {/* Status badge */}
-            <div style={{
-              display: "flex", alignItems: "center", gap: "6px",
-              padding: "5px 12px", borderRadius: "999px",
-              background: "#f5f3ff", border: "1px solid #ddd6fe",
-              fontSize: "11px", fontWeight: 700, color: "#7c3aed",
-            }}>
-              <i className="fa-brands fa-google" style={{ fontSize: "12px" }} />
-              Sheets Connected
+            {/* Status badge & Settings */}
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <button
+                onClick={() => setShowAuth(true)}
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  color: "#64748b", fontSize: "16px", padding: "4px",
+                  transition: "color 0.2s"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "#7c3aed"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "#64748b"}
+                title="Pengaturan"
+              >
+                <i className="fa-solid fa-gear" />
+              </button>
+              <div style={{
+                display: "flex", alignItems: "center", gap: "6px",
+                padding: "5px 12px", borderRadius: "999px",
+                background: "#f5f3ff", border: "1px solid #ddd6fe",
+                fontSize: "11px", fontWeight: 700, color: "#7c3aed",
+              }}>
+                <i className="fa-brands fa-google" style={{ fontSize: "12px" }} />
+                Sheets Connected
+              </div>
             </div>
           </div>
         </div>
