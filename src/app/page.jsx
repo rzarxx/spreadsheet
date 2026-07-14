@@ -107,6 +107,7 @@ export default function Home() {
   const [status, setStatus] = useState({ type: "", message: "" });
   const [isMobile, setIsMobile] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Check for token on mount
   useEffect(() => {
@@ -351,12 +352,7 @@ export default function Home() {
                 <i className="fa-solid fa-gear" />
               </button>
               <button
-                onClick={() => {
-                  if (confirm("Apakah Anda yakin ingin keluar? Token Anda akan dihapus dari perangkat ini.")) {
-                    localStorage.removeItem("kkl_token");
-                    window.location.reload();
-                  }
-                }}
+                onClick={() => setShowLogoutConfirm(true)}
                 style={{
                   background: "none", border: "none", cursor: "pointer",
                   color: "#64748b", fontSize: "16px", padding: "4px",
@@ -589,6 +585,66 @@ export default function Home() {
       </main>
 
       <AuthModal show={showAuth} onClose={() => setShowAuth(false)} />
+
+      {/* ── Logout Confirm Modal ── */}
+      {showLogoutConfirm && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 1000,
+          background: "rgba(15, 23, 42, 0.6)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center"
+        }}>
+          <div style={{
+            background: "#ffffff", width: "min(400px, 92%)",
+            borderRadius: "20px", padding: "28px",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            textAlign: "center", animation: "fadeInUp 0.3s ease forwards"
+          }}>
+            <div style={{
+              width: "60px", height: "60px", margin: "0 auto 20px",
+              background: "#fee2e2", borderRadius: "50%",
+              display: "flex", alignItems: "center", justifyContent: "center"
+            }}>
+              <i className="fa-solid fa-right-from-bracket" style={{ fontSize: "24px", color: "#f43f5e" }} />
+            </div>
+            <h3 style={{ margin: "0 0 10px", fontSize: "1.3rem", color: "#0f172a", fontWeight: 800 }}>
+              Konfirmasi Keluar
+            </h3>
+            <p style={{ color: "#64748b", fontSize: "14px", lineHeight: 1.6, marginBottom: "24px" }}>
+              Apakah Anda yakin ingin keluar? Token Anda akan dihapus dari perangkat ini dan Anda harus memasukkannya kembali nanti.
+            </p>
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                style={{
+                  flex: 1, padding: "12px", background: "#f1f5f9",
+                  color: "#475569", border: "none", borderRadius: "10px",
+                  fontWeight: 700, cursor: "pointer", transition: "background 0.2s"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#e2e8f0"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "#f1f5f9"}
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.removeItem("kkl_token");
+                  window.location.reload();
+                }}
+                style={{
+                  flex: 1, padding: "12px", background: "#f43f5e",
+                  color: "white", border: "none", borderRadius: "10px",
+                  fontWeight: 700, cursor: "pointer", transition: "background 0.2s",
+                  boxShadow: "0 4px 12px rgba(244, 63, 94, 0.25)"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#e11d48"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "#f43f5e"}
+              >
+                Ya, Keluar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Footer ── */}
       <footer style={{ background: "white", borderTop: "1px solid #f1f5f9", padding: "16px 24px", textAlign: "center" }}>
