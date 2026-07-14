@@ -116,37 +116,43 @@ export async function POST(request) {
       }
     }
 
-    // ── 5. Validasi Kredensial ────────────────────────────────────────────────
-    if (
-      !process.env.GOOGLE_CLIENT_EMAIL ||
-      !process.env.GOOGLE_PRIVATE_KEY ||
-      !process.env.GOOGLE_SHEET_ID
-    ) {
-      console.error("Kredensial Google tidak lengkap.");
+    // ── 5. Token & Validasi Kredensial ────────────────────────────────────────
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
+    if (!token) {
+      return NextResponse.json({ error: "Token akses tidak ditemukan. Silakan login." }, { status: 401 });
+    }
+
+    const config = await getConfigForToken(token);
+    if (!config) {
+      return NextResponse.json({ error: "Token tidak valid." }, { status: 401 });
+    }
+
+    if (!config.clientEmail || !config.privateKey || !config.sheetId) {
       return NextResponse.json(
-        { error: "Layanan sedang tidak tersedia. Hubungi administrator." },
-        { status: 503 }
+        { error: "Kredensial Google belum dikonfigurasi. Silakan lengkapi di menu Pengaturan." },
+        { status: 400 }
       );
     }
 
     // ── 6. Autentikasi ────────────────────────────────────────────────────────
     const serviceAccountAuth = new JWT({
-      email: process.env.GOOGLE_CLIENT_EMAIL,
-      key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+      email: config.clientEmail,
+      key: config.privateKey.replace(/\\n/g, "\n"),
       scopes: ["https://www.googleapis.com/auth/spreadsheets"],
     });
 
     // ── 7. Load Info & Header ─────────────────────────────────────────────────
-    const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID, serviceAccountAuth);
+    const doc = new GoogleSpreadsheet(config.sheetId, serviceAccountAuth);
     await doc.loadInfo();
 
     const sheet = doc.sheetsByIndex[0];
-    const headerRowIndex = parseInt(process.env.GOOGLE_HEADER_ROW || "1", 10); // 1-based
+    const headerRowIndex = parseInt(config.headerRow || "1", 10); // 1-based
 
     await sheet.loadHeaderRow(headerRowIndex);
 
     // Hitung index kolom (A=0, B=1, dst)
-    const startColStr = (process.env.GOOGLE_START_COLUMN || "A").toUpperCase();
+    const startColStr = (config.startColumn || "A").toUpperCase();
     let startColIdx = 0;
     for (let i = 0; i < startColStr.length; i++) {
       startColIdx = startColIdx * 26 + (startColStr.charCodeAt(i) - 64);
@@ -158,7 +164,7 @@ export async function POST(request) {
 
     if (headersToMap.filter((h) => h && h.trim() !== "").length === 0) {
       return NextResponse.json(
-        { error: "Header spreadsheet tidak ditemukan. Periksa GOOGLE_HEADER_ROW dan GOOGLE_START_COLUMN." },
+        { error: "Header spreadsheet tidak ditemukan. Periksa konfigurasi Header Row dan Start Column." },
         { status: 422 }
       );
     }
@@ -187,7 +193,7 @@ export async function POST(request) {
     const firstDataRow = headerRowIndex + 1; // baris pertama data (di bawah header)
     const rangeParam = encodeURIComponent(`${sheet.title}!${startColStr}${firstDataRow}`);
     const sheetsApiUrl =
-      `https://sheets.googleapis.com/v4/spreadsheets/${process.env.GOOGLE_SHEET_ID}` +
+      `https://sheets.googleapis.com/v4/spreadsheets/${config.sheetId}` +
       `/values/${rangeParam}:append` +
       `?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
 

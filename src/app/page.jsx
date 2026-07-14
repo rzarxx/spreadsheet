@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import AuthModal from "@/app/components/AuthModal";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -105,6 +106,20 @@ export default function Home() {
   const [sheetTitle, setSheetTitle] = useState("");
   const [status, setStatus] = useState({ type: "", message: "" });
   const [isMobile, setIsMobile] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+
+  // Check for token on mount
+  useEffect(() => {
+    const token = localStorage.getItem("kkl_token");
+    if (!token) setShowAuth(true);
+  }, []);
+
+  // Re-fetch columns when auth modal is closed (token available)
+  useEffect(() => {
+    if (!showAuth && localStorage.getItem("kkl_token")) {
+      fetchColumns();
+    }
+  }, [showAuth, fetchColumns]);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 600);
@@ -117,7 +132,13 @@ export default function Home() {
     setFetchingCols(true);
     setFetchError("");
     try {
-      const res = await fetch("/api/headers");
+      const token = localStorage.getItem("kkl_token");
+      const res = await fetch("/api/headers", {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       const cols = data.headers;
@@ -148,9 +169,13 @@ export default function Home() {
     setLoading(true);
     setStatus({ type: "", message: "" });
     try {
+      const token = localStorage.getItem("kkl_token");
       const res = await fetch("/api/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
         body: JSON.stringify({ fields: formData }),
       });
       const data = await res.json();
@@ -527,6 +552,8 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      <AuthModal show={showAuth} onClose={() => setShowAuth(false)} />
 
       {/* ── Footer ── */}
       <footer style={{ background: "white", borderTop: "1px solid #f1f5f9", padding: "16px 24px", textAlign: "center" }}>

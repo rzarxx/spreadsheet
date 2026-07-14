@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { JWT } from "google-auth-library";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 // ─── Rate Limiter ─────────────────────────────────────────────────────────────
 const RATE_LIMIT = 30;
@@ -34,15 +37,33 @@ export async function GET(request) {
       );
     }
 
-    const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY;
-    const sheetId = process.env.GOOGLE_SHEET_ID;
-    const headerRowIndex = parseInt(process.env.GOOGLE_HEADER_ROW || "1", 10); // 1-based
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
+    
+    if (!token) {
+      return NextResponse.json(
+        { error: "Token akses tidak ditemukan. Silakan login." },
+        { status: 401 }
+      );
+    }
+
+    const config = await prisma.sheetConfig.findUnique({ where: { token } });
+    if (!config) {
+      return NextResponse.json(
+        { error: "Token tidak valid." },
+        { status: 401 }
+      );
+    }
+
+    const clientEmail = config.clientEmail;
+    const privateKey = config.privateKey;
+    const sheetId = config.sheetId;
+    const headerRowIndex = parseInt(config.headerRow || "1", 10); // 1-based
 
     if (!clientEmail || !privateKey || !sheetId) {
       return NextResponse.json(
-        { error: "Kredensial Google belum dikonfigurasi. Isi GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY, dan GOOGLE_SHEET_ID di file .env.local." },
-        { status: 503 }
+        { error: "Kredensial Google belum dikonfigurasi. Silakan isi di menu Pengaturan." },
+        { status: 400 }
       );
     }
 
@@ -131,9 +152,8 @@ export async function GET(request) {
     console.error("[headers] Error:", error.message);
 
     if (error.message?.includes("No values in the header row")) {
-      const rowIndex = parseInt(process.env.GOOGLE_HEADER_ROW || "1", 10);
       return NextResponse.json(
-        { error: `Baris ${rowIndex} kosong. Set GOOGLE_HEADER_ROW sesuai nomor baris header Anda.` },
+        { error: `Baris header kosong. Set Header Row sesuai konfigurasi Anda.` },
         { status: 422 }
       );
     }
@@ -145,7 +165,7 @@ export async function GET(request) {
     }
     if (error.message?.includes("not found")) {
       return NextResponse.json(
-        { error: "Spreadsheet tidak ditemukan. Periksa GOOGLE_SHEET_ID di .env.local." },
+        { error: "Spreadsheet tidak ditemukan. Periksa Spreadsheet ID di pengaturan." },
         { status: 404 }
       );
     }
