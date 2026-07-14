@@ -160,7 +160,9 @@ export async function POST(request) {
     const headerRowIndex = parseInt(process.env.GOOGLE_HEADER_ROW || "1", 10);
     await sheet.loadHeaderRow(headerRowIndex);
 
-    await sheet.addRow(sanitizedFields);
+    // { insert: true } memastikan Google Sheets menyisipkan baris baru (INSERT_ROWS).
+    // Ini sangat penting agar RUMUS/FORMULA otomatis tercopy dari baris di atasnya.
+    await sheet.addRow(sanitizedFields, { insert: true });
 
     return NextResponse.json(
       { success: true, message: "Data berhasil disimpan ke Google Sheets." },
