@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { JWT } from "google-auth-library";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 // ─── Rate Limiter ─────────────────────────────────────────────────────────────
 const RATE_LIMIT = 20;
@@ -25,10 +28,17 @@ const MAX_FIELDS = 50;
 const MAX_VALUE_LENGTH = 1000;
 
 /**
+ * Helper: fetch config for a token
+ */
+async function getConfigForToken(token) {
+  if (!token) return null;
+  const cfg = await prisma.sheetConfig.findUnique({ where: { token } });
+  return cfg;
+}
+
+/**
  * POST /api/submit
- * Menyimpan data form sebagai baris baru di Google Sheet.
- * Menggunakan Sheets API langsung (bukan addRow) untuk memastikan
- * data ditulis DI BAWAH header row, tidak menimpa header.
+ * Expects Authorization: Bearer <token> header.
  */
 export async function POST(request) {
   try {
