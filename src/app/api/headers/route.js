@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { JWT } from "google-auth-library";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 // ─── Rate Limiter ─────────────────────────────────────────────────────────────
 const RATE_LIMIT = 30;

@@ -1,8 +1,6 @@
 // src/app/api/auth/login/route.js
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 export async function POST(request) {
   try {

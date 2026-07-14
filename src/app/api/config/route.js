@@ -1,8 +1,6 @@
 // src/app/api/config/route.js
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 /**
  * GET config for token (Authorization: Bearer <token>)
