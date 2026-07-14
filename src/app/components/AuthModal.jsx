@@ -17,12 +17,7 @@ export default function AuthModal({ show, onClose }) {
   const [status, setStatus] = useState({ type: "", message: "" });
   const [loading, setLoading] = useState(false);
 
-  // Load existing config when entering config tab
-  useEffect(() => {
-    if (activeTab === "config") {
-      fetchConfig();
-    }
-  }, [activeTab]);
+
 
   const fetchConfig = async () => {
     try {
@@ -47,6 +42,13 @@ export default function AuthModal({ show, onClose }) {
       setStatus({ type: "error", message: err.message });
     }
   };
+
+  // Load existing config when entering config tab
+  useEffect(() => {
+    if (activeTab === "config") {
+      fetchConfig();
+    }
+  }, [activeTab]);
 
   const handleLogin = async () => {
     if (!tokenInput) {

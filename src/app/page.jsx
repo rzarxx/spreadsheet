@@ -114,19 +114,7 @@ export default function Home() {
     if (!token) setShowAuth(true);
   }, []);
 
-  // Re-fetch columns when auth modal is closed (token available)
-  useEffect(() => {
-    if (!showAuth && localStorage.getItem("kkl_token")) {
-      fetchColumns();
-    }
-  }, [showAuth, fetchColumns]);
 
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 600);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
 
   const fetchColumns = useCallback(async () => {
     setFetchingCols(true);
@@ -154,6 +142,20 @@ export default function Home() {
     } finally {
       setFetchingCols(false);
     }
+  }, []);
+
+  // Re-fetch columns when auth modal is closed (token available)
+  useEffect(() => {
+    if (!showAuth && localStorage.getItem("kkl_token")) {
+      fetchColumns();
+    }
+  }, [showAuth, fetchColumns]);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 600);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
   useEffect(() => { fetchColumns(); }, [fetchColumns]);
