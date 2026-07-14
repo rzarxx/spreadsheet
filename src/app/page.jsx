@@ -350,6 +350,24 @@ export default function Home() {
               >
                 <i className="fa-solid fa-gear" />
               </button>
+              <button
+                onClick={() => {
+                  if (confirm("Apakah Anda yakin ingin keluar? Token Anda akan dihapus dari perangkat ini.")) {
+                    localStorage.removeItem("kkl_token");
+                    window.location.reload();
+                  }
+                }}
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  color: "#64748b", fontSize: "16px", padding: "4px",
+                  transition: "color 0.2s"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "#f43f5e"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "#64748b"}
+                title="Keluar"
+              >
+                <i className="fa-solid fa-right-from-bracket" />
+              </button>
               <div style={{
                 display: "flex", alignItems: "center", gap: "6px",
                 padding: "5px 12px", borderRadius: "999px",
