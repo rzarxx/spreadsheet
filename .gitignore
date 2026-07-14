@@ -43,6 +43,11 @@ yarn-error.log*
 !package-lock.json
 !jsconfig.json
 
+# Data files — jangan push spreadsheet/CSV asli ke Git
+*.xlsx
+*.xls
+*.csv
+
 # Internal agent/AI config files
 AGENTS.md
 CLAUDE.md
