@@ -16,9 +16,17 @@ export default function AuthModal({ show, onClose }) {
   });
   const [status, setStatus] = useState({ type: "", message: "" });
   const [loading, setLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-
-
+  useEffect(() => {
+    if (show) {
+      const token = localStorage.getItem("kkl_token");
+      setIsLoggedIn(!!token);
+      if (token && activeTab !== "config") {
+        setActiveTab("config");
+      }
+    }
+  }, [show, activeTab]);
   const fetchConfig = async () => {
     try {
       const token = localStorage.getItem("kkl_token");
@@ -150,18 +158,22 @@ export default function AuthModal({ show, onClose }) {
 
         {/* Tab navigation */}
         <div style={styles.tabNav}>
-          <button
-            onClick={() => { setActiveTab("login"); setStatus({type: "", message: ""}); }}
-            style={{ ...styles.tabBtn, background: activeTab === "login" ? "#e2e8f0" : "#f3f4f6" }}
-          >
-            Masuk
-          </button>
-          <button
-            onClick={() => { setActiveTab("register"); setStatus({type: "", message: ""}); }}
-            style={{ ...styles.tabBtn, background: activeTab === "register" ? "#e2e8f0" : "#f3f4f6" }}
-          >
-            Daftar
-          </button>
+          {!isLoggedIn && (
+            <button
+              onClick={() => { setActiveTab("login"); setStatus({type: "", message: ""}); }}
+              style={{ ...styles.tabBtn, background: activeTab === "login" ? "#e2e8f0" : "#f3f4f6" }}
+            >
+              Masuk
+            </button>
+          )}
+          {!isLoggedIn && (
+            <button
+              onClick={() => { setActiveTab("register"); setStatus({type: "", message: ""}); }}
+              style={{ ...styles.tabBtn, background: activeTab === "register" ? "#e2e8f0" : "#f3f4f6" }}
+            >
+              Daftar
+            </button>
+          )}
           <button
             onClick={() => { setActiveTab("config"); setStatus({type: "", message: ""}); }}
             style={{ ...styles.tabBtn, background: activeTab === "config" ? "#e2e8f0" : "#f3f4f6" }}
