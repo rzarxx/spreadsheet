@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Providers } from "./components/Providers";
 
 export const metadata = {
   title: 'KKL Sheet | Input Data ke Google Spreadsheet',
@@ -27,7 +28,11 @@ export default function RootLayout({ children }) {
           referrerPolicy="no-referrer"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <Providers>
+          {children}
+        </Providers>
+      </body>
     </html>
   )
 }

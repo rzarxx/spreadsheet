@@ -8,14 +8,26 @@ datasource db {
   provider = "postgresql"
 }
 
-model SheetConfig {
-  id           String   @id @default(cuid())
-  token        String   @unique
-  clientEmail  String
-  privateKey   String
-  sheetId      String
-  headerRow    Int      @default(1)
-  startColumn  String   @default("A")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  picture       String?
+  accessToken   String?
+  refreshToken  String?
+  projects      Project[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  sheetId     String
+  headerRow   Int      @default(1)
+  startColumn String   @default("A")
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
