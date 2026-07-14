@@ -189,7 +189,6 @@ export default function Home() {
         >
           <i className={`fa-solid ${icon}`} style={{ color: "#a78bfa", fontSize: "10px", width: "12px", textAlign: "center" }} />
           {col}
-          <span style={{ color: "#f87171", fontSize: "11px" }}>*</span>
         </label>
       );
 
@@ -203,7 +202,6 @@ export default function Home() {
             name={col}
             value={formData[col] || ""}
             onChange={handleChange}
-            required
             style={{
               ...inputBase,
               cursor: "pointer",
@@ -229,7 +227,6 @@ export default function Home() {
             value={formData[col] || ""}
             onChange={handleChange}
             placeholder={placeholder}
-            required
             rows={3}
             style={{ ...inputBase, resize: "vertical", minHeight: "80px" }}
           />
@@ -243,7 +240,6 @@ export default function Home() {
             value={formData[col] || ""}
             onChange={handleChange}
             placeholder={placeholder}
-            required
             style={inputBase}
           />
         );

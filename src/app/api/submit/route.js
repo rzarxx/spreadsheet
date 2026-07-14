@@ -99,18 +99,11 @@ export async function POST(request) {
         );
       }
 
-      if (strVal === "") {
-        emptyFields.push(key);
-      } else {
+      if (strVal !== "") {
         sanitizedFields[key] = strVal;
+      } else {
+        sanitizedFields[key] = ""; // Allow empty values
       }
-    }
-
-    if (emptyFields.length > 0) {
-      return NextResponse.json(
-        { error: `Mohon lengkapi semua field: ${emptyFields.join(", ")}` },
-        { status: 400 }
-      );
     }
 
     // ── 5. Validasi Kredensial ────────────────────────────────────────────────
