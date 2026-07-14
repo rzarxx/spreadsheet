@@ -142,20 +142,31 @@ export async function POST(request) {
 
     await sheet.loadHeaderRow(headerRowIndex);
 
-    // Ambil urutan header yang benar dari Sheet
-    const orderedHeaders = sheet.headerValues.filter((h) => h && h.trim() !== "");
+    // Hitung index kolom (A=0, B=1, dst)
+    const startColStr = (process.env.GOOGLE_START_COLUMN || "A").toUpperCase();
+    let startColIdx = 0;
+    for (let i = 0; i < startColStr.length; i++) {
+      startColIdx = startColIdx * 26 + (startColStr.charCodeAt(i) - 64);
+    }
+    startColIdx -= 1; // 0-based
 
-    if (orderedHeaders.length === 0) {
+    // Ambil header HANYA mulai dari kolom startColStr
+    const headersToMap = sheet.headerValues.slice(startColIdx);
+
+    if (headersToMap.filter((h) => h && h.trim() !== "").length === 0) {
       return NextResponse.json(
-        { error: "Header spreadsheet tidak ditemukan. Periksa GOOGLE_HEADER_ROW." },
+        { error: "Header spreadsheet tidak ditemukan. Periksa GOOGLE_HEADER_ROW dan GOOGLE_START_COLUMN." },
         { status: 422 }
       );
     }
 
     // ── 8. Susun Data sesuai Urutan Kolom Header ──────────────────────────────
     // Setiap nilai dimasukkan ke posisi kolom yang TEPAT sesuai header.
-    // Kolom yang tidak ada di form diisi string kosong.
-    const orderedValues = orderedHeaders.map((header) => sanitizedFields[header] ?? "");
+    // Kolom kosong (blank column) tetap dipertahankan posisinya sebagai "".
+    const orderedValues = headersToMap.map((header) => {
+      if (!header || header.trim() === "") return "";
+      return sanitizedFields[header] ?? "";
+    });
 
     // ── 9. Dapatkan Access Token untuk Sheets API ─────────────────────────────
     const tokenResponse = await serviceAccountAuth.getAccessToken();
@@ -167,15 +178,11 @@ export async function POST(request) {
 
     // ── 10. Tulis ke Sheet via Sheets REST API langsung ───────────────────────
     //
-    // KRITIS: Range dimulai dari baris SETELAH header (headerRowIndex + 1).
-    // Ini memastikan data TIDAK PERNAH menimpa baris header!
-    //
-    // insertDataOption=INSERT_ROWS  → sisipkan baris baru (dorong data lama ke bawah)
-    // valueInputOption=USER_ENTERED → Google Sheets interpretasikan nilai secara natural
-    //                                 (tanggal jadi tanggal, angka jadi angka, dll.)
+    // KRITIS: Range dimulai dari kolom dan baris yang benar.
+    // Contoh: startColStr="B", headerRowIndex=5 -> Range: Sheet1!B6
     //
     const firstDataRow = headerRowIndex + 1; // baris pertama data (di bawah header)
-    const rangeParam = encodeURIComponent(`${sheet.title}!A${firstDataRow}`);
+    const rangeParam = encodeURIComponent(`${sheet.title}!${startColStr}${firstDataRow}`);
     const sheetsApiUrl =
       `https://sheets.googleapis.com/v4/spreadsheets/${process.env.GOOGLE_SHEET_ID}` +
       `/values/${rangeParam}:append` +
